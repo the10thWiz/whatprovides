@@ -18,3 +18,9 @@ The challenge for me, is I don't use any other package managers, so I cannot tes
 - Pip (Python packages)
 
 If you would like to contribute a new package manager, please post a PR.
+
+## Planned
+
+There are a couple of sources I plan to add.
+
+- Git (files in a git repository)
