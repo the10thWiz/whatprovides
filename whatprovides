@@ -3,7 +3,7 @@
 # Usage: {pip|pip2|pip3} {file}
 locate_package_pip() {
   # This is a limitation of the method currently used, something better would be nice
-  echo "Note: pip finder does not find files for packages installed via a virtualenv"
+  echo "Note: pip finder does not find files for packages installed in a virtualenv"
   for pkg in $($1 list | tail -n -2 | cut -d" " -f1)
   do
     if $1 show -f "$pkg" | grep "$2"
@@ -20,6 +20,7 @@ locate_package_providing_file() {
     echo "Trying XBPS:"
     xbps-query -o "$1"
   fi
+  # In extrememly rare cases, dpkg may be available when apt (or apt-get) are not
   if type dpkg 2> /dev/null > /dev/null
   then
     echo "Trying apt:"
