@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Usage: {pip|pip2|pip3} {file}
+locate_package_pip() {
+  # This is a limitation of the method currently used, something better would be nice
+  echo "Note: pip finder does not find files for packages installed via a virtualenv"
+  for pkg in $($1 list | tail -n -2 | cut -d" " -f1)
+  do
+    if $1 show -f "$pkg" | grep "$2"
+    then
+      echo "=== Above files found in package $pkg ==="
+    fi
+  done
+}
+
+locate_package_providing_file() {
+  echo "Locating $1"
+  if type xbps-query 2> /dev/null > /dev/null
+  then
+    echo "Trying XBPS:"
+    xbps-query -o "$1"
+  fi
+  if type dpkg 2> /dev/null > /dev/null
+  then
+    echo "Trying apt:"
+    dpkg -S $1
+  fi
+  TRIED_PYTHON=false
+  if type pip3 2> /dev/null > /dev/null
+  then
+    echo "Trying pip3:"
+    TRIED_PYTHON=true
+    locate_package_pip pip3 $1
+  fi
+  if type pip2 2> /dev/null > /dev/null
+  then
+    echo "Trying pip2:"
+    TRIED_PYTHON=true
+    locate_package_pip pip2 $1
+  fi
+  if [[ $TRIED_PYTHON == "false" ]] && type pip 2> /dev/null > /dev/null
+  then
+    echo "Trying pip:"
+    locate_package_pip pip $1
+  fi
+}
+
+# Locate file (with full path) to search for
+
+if [[ "$1" == "" ]]
+then
+  echo "Usage: $0 [file | command]"
+  exit
+fi
+
+if [[ -f "$1" ]]
+then
+  locate_package_providing_file "$1"
+elif [[ -d "$1" ]]
+then
+  echo "Directories are not provided by package manager"
+else
+  FILE="$(which "$1" 2> /dev/null)"
+  if [[ -f "$FILE" ]]
+  then
+    locate_package_providing_file "$FILE"
+  else
+    echo "File '$1' not found"
+  fi
+fi
+  
